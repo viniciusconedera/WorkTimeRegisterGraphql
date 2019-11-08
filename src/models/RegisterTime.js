@@ -10,7 +10,7 @@ class RegisterTime extends Model {
  }
 
 RegisterTime.init({
-    time_registered: DataTypes.DATETIME
+    time_registered: DataTypes.STRING
 }, { sequelize: Sequelize, modelName: 'time_registered' })
 
 RegisterTime.associate()

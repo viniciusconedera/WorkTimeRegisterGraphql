@@ -30,20 +30,21 @@ const typeDefs = gql`
   type RegisterTime {
     id: ID!
     time_registered: String!
-    user: User!
+    user: User
   }
 
   type Query {
     allUsers: [User]
     user(id: ID!): User
-    allRegisterTime: [RegisterTime]
+    allRegisters: [RegisterTime]
   }
 
   type Mutation {
+    createMaster(pass: String! data: CreateUserInput): User
     createUser(data: CreateUserInput): User @auth(role: ADMIN)
     updateUser(id: ID! data: UpdateUserInput): User
     deleteUser(id: ID!): Boolean
-    createRegisterTime(data: CreateRegisterTimeInput): RegisterTime
+    createRegisterTime(id: ID! data: CreateRegisterTimeInput): RegisterTime
     updateRegisterTime(id: ID! data: UpdateRegisterTimeInput): RegisterTime
     signin(
       email: String!
@@ -89,22 +90,22 @@ const resolver = {
     allUsers() {
       return User.findAll({include: [RegisterTime]})
     },
+    allRegisters() {
+      return RegisterTime.findAll({include: [User]})
+    },
     user(_, { id }) {
       return User.findByPk(id, {include: [RegisterTime]});
     }
   },
   Mutation: {
     async createRegisterTime(parent, body, context, info) {
-      console.log(body)
-      if (body.data.user) {
+      if (body.id) {
         const user = await User.findOne({
         where: { id: body.id }
         })
-        body.data.user = user
-        console.log(body.data.user)
         const registerTime = await RegisterTime.create(body.data)
-        await registerTime.setUser(createdUser.get('id'))
-        const reloadedRegister = RegisterTime.reload({ include: [User] })
+        await registerTime.setUser(user.get('id'))
+        const reloadedRegister = registerTime.reload({ include: [User] })
         pubSub.publish('createdRegister', {
           onCreatedegister: reloadedRegister
         })
@@ -117,6 +118,15 @@ const resolver = {
       body.data.password = await bcrypt.hash(body.data.password, 10)
             const user = await User.create(body.data)
             return user
+    },
+    async createMaster(parent, body, context, info) {
+      if (body.pass === "MasterUser") {
+        body.data.password = await bcrypt.hash(body.data.password, 10)
+        const user = await User.create(body.data)
+        return user
+      } else {
+        throw new Error('Senha incorreta')
+      }
     },
     async deleteUser(parent, body, context, info) {
       const user = await User.findOne({
