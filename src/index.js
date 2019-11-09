@@ -36,7 +36,7 @@ const typeDefs = gql`
   type Query {
     allUsers: [User] @auth(role:ADMIN)
     user(id: ID!): [RegisterTime]
-    allRegisters: [RegisterTime]
+    allRegisters: [RegisterTime] @auth(role:ADMIN)
     lastRegister(id: ID!): RegisterTime
   }
 
