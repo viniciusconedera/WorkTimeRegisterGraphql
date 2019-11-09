@@ -24,7 +24,7 @@ const typeDefs = gql`
     email: String!
     password: String!
     role: RoleEnum
-    RegisterTime: [RegisterTime]
+    registertimes: [RegisterTime]
   }
 
   type RegisterTime {
@@ -35,8 +35,9 @@ const typeDefs = gql`
 
   type Query {
     allUsers: [User]
-    user(id: ID!): User
+    user(id: ID!): [RegisterTime]
     allRegisters: [RegisterTime]
+    lastRegister(id: ID!): RegisterTime
   }
 
   type Mutation {
@@ -107,7 +108,7 @@ const resolver = {
         await registerTime.setUser(user.get('id'))
         const reloadedRegister = registerTime.reload({ include: [User] })
         pubSub.publish('createdRegister', {
-          onCreatedegister: reloadedRegister
+          onCreatedRegister: reloadedRegister
         })
         return reloadedRegister
       } else {
@@ -171,7 +172,10 @@ const server = new ApolloServer({
   schemaDirectives: {
     auth: AuthDirective
   },
-  context({ req }) {
+  context({ req, connection }) {
+    if (connection) {
+      return connection.context
+  }
     return {
         headers: req.headers
     }

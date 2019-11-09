@@ -33,11 +33,13 @@ class AuthDirective extends SchemaDirectiveVisitor {
 
                 const context = args[2]
                 const token = context.headers.authorization
+                if (!token) {
+                    throw new AuthenticationError('Voce necessita de autorização')
+                }
                 const jwtData = jwt.decode(token.replace('Bearer ', ''))
                 if (!jwtData) {
                     throw new AuthenticationError('Erro de autenticação')
                 }
-                console.log('não aparecer')
                 const { id } = jwtData
 
                 const user = await User.findOne({
