@@ -34,18 +34,20 @@ const typeDefs = gql`
   }
 
   type Query {
-    allUsers: [User]
+    allUsers: [User] @auth(role:ADMIN)
     user(id: ID!): [RegisterTime]
     allRegisters: [RegisterTime]
     lastRegister(id: ID!): RegisterTime
   }
+
+  
 
   type Mutation {
     createMaster(pass: String! data: CreateUserInput): User
     createUser(data: CreateUserInput): User @auth(role: ADMIN)
     updateUser(id: ID! data: UpdateUserInput): User
     deleteUser(id: ID!): Boolean
-    createRegisterTime(id: ID! data: CreateRegisterTimeInput): RegisterTime
+    createRegisterTime(id: ID! data: CreateRegisterTimeInput): RegisterTime @auth(role: USER)
     updateRegisterTime(id: ID! data: UpdateRegisterTimeInput): RegisterTime
     signin(
       email: String!
