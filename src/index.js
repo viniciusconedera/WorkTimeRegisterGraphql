@@ -25,6 +25,8 @@ const typeDefs = gql`
     password: String!
     role: RoleEnum
     registertimes: [RegisterTime]
+    entrance: String
+    exit: String
   }
 
   type RegisterTime {
@@ -69,6 +71,8 @@ const typeDefs = gql`
     email: String!
     password: String!
     role: RoleEnum!
+    entrance: String
+    exit: String
   }
 
   input UpdateUserInput {
@@ -164,6 +168,35 @@ const resolver = {
   Subscription: {
     onCreatedRegister: {
         subscribe: () => pubSub.asyncIterator('createdRegister')
+    }
+  },
+  User: {
+    entrance(parent, body, context, info) {
+      if (!parent.registertimes.length) {
+        return ''
+      }
+      const registers = parent.registertimes.length
+      if (registers === 1) {
+        return parent.registertimes[0].time_registered
+      } else {
+        if (registers % 2) {
+          return parent.registertimes[registers-1].time_registered
+        } else {
+          return parent.registertimes[registers-2].time_registered
+        }
+      }
+    },
+    exit(parent, body, context, info) {
+      const registers = parent.registertimes.length
+      if (registers <= 1) {
+        return ''
+      } else {
+        if (registers % 2) {
+          return parent.registertimes[registers-2].time_registered
+        } else {
+          return parent.registertimes[registers-1].time_registered
+        }
+      }
     }
   }
 }
